@@ -12,7 +12,7 @@ provider "aws" {
 terraform {
   backend "s3" {
     bucket = "ohbster-ado-terraform-class5"
-    key    = "dev/frontend/terraform.tfstate"
+    key    = "cloudfront/frontend/terraform.tfstate"
     region = "us-east-1"
   }
 }
