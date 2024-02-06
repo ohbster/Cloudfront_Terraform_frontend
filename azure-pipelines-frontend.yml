@@ -18,7 +18,7 @@ steps:
   inputs:
     provider: 'aws'
     command: 'init'
-    backendServiceAWS: '(Project 2) AWS for Terraform'
+    backendServiceAWS: '(Cloudfront_Terraform)AWS_for_terrafrom'
     backendAWSBucketName: 'ohbster-ado-terraform-class5'
     backendAWSKey: 'cloudfront/frontend/terraform.tfstate'
   displayName: 'Initialize Terraform'
@@ -28,7 +28,7 @@ steps:
     provider: 'aws'
     command: 'apply'
     commandOptions: '--auto-approve'
-    environmentServiceNameAWS: '(Project 2) AWS for Terraform'
+    environmentServiceNameAWS: '(Cloudfront_Terraform)AWS_for_terrafrom'
   displayName: 'Apply Terraform'
 # - script: echo Hello, world!
 #   displayName: 'Run a one-line script'
