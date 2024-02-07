@@ -30,10 +30,11 @@ steps:
     commandOptions: '--auto-approve'
     environmentServiceNameAWS: '(Cloudfront_Terraform)AWS_for_terrafrom'
   displayName: 'Apply Terraform'
-# - script: echo Hello, world!
-#   displayName: 'Run a one-line script'
 
-# - script: |
-#     echo Add other tasks to build, test, and deploy your project.
-#     echo See https://aka.ms/yaml
-#   displayName: 'Run a multi-line script'
+- task: AWSCLI@1
+  inputs:
+    awsCredentials: '(Cloudfront_Terraform)AWS'
+    regionName: 'us-east-1'
+    awsCommand: 'cloudfront'
+    awsSubCommand: 'create-invalidation'
+    awsArguments: '--distribution-id "E3MU3PWGRMQQIP" --paths "/*"'
