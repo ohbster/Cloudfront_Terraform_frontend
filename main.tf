@@ -17,10 +17,7 @@ terraform {
   }
 }
 
-#This is used by mff_id tag. This is will identify all resources that belong to the terraform deployment
-resource "random_uuid" "uuid" {
 
-}
 
 data "aws_s3_bucket" "bucket" {
     bucket = "ohbster-project-2-static"
