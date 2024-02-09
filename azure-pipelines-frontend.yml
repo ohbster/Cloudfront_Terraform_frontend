@@ -23,11 +23,6 @@ steps:
     backendAWSKey: 'cloudfront/frontend/terraform.tfstate'
   displayName: 'Initialize Terraform'
 
-- bash: |
-    terraform show --json | jq '.values.outputs.distribution_id.value'
-    echo "##vso[task.setvariable variable=distribution_id;isOutput=true]$distribution_id"
-  name: GetDistributionId
-
 - task: TerraformTaskV4@4
   inputs:
     provider: 'aws'
@@ -35,11 +30,17 @@ steps:
     commandOptions: '--auto-approve'
     environmentServiceNameAWS: '(Cloudfront_Terraform)AWS_for_terrafrom'
   displayName: 'Apply Terraform'
+  
+- bash: |
+    terraform show --json | jq '.values.outputs.distribution_id.value'
+    echo "##vso[task.setvariable variable=distribution_id;isOutput=true]$distribution_id"
+    aws cloudfront create-invalidation --distribution-id $GetDistributionId.distribution_id --paths '/*'
+  name: GetDistributionId
 
-- task: AWSCLI@1
-  inputs:
-    awsCredentials: '(Cloudfront_Terraform)AWS'
-    regionName: 'us-east-1'
-    awsCommand: 'cloudfront'
-    awsSubCommand: 'create-invalidation'
-    awsArguments: "--distribution-id $[GetDistributionId.distribution_id] --paths '/*'"
+# - task: AWSCLI@1
+#   inputs:
+#     awsCredentials: '(Cloudfront_Terraform)AWS'
+#     regionName: 'us-east-1'
+#     awsCommand: 'cloudfront'
+#     awsSubCommand: 'create-invalidation'
+#     awsArguments: "--distribution-id $[GetDistributionId.distribution_id] --paths '/*'"
