@@ -3,6 +3,13 @@
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
 
+resources:
+  pipelines:
+    - pipeline: Cloudfront_Terraform
+      source: Cloudfront_Terraform
+      project: Cloudfront_Terraform
+      trigger: true #run the front end each time that the backend successfully completes
+
 trigger:
 - main
 
