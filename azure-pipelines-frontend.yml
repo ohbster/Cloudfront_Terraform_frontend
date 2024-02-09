@@ -29,7 +29,7 @@ steps:
     downloadPath: '$(System.ArtifactsDirectory)'
 
 - script: cat $(System.ArtifactsDirectory)/variables/pipeline.env
-  displayname: 'Restore Environment Variables'
+  displayName: 'Restore Environment Variables'
 
 - task: TerraformInstaller@1
   inputs:
