@@ -58,10 +58,6 @@ steps:
 #     aws cloudfront create-invalidation --distribution-id $(terraform show --json | jq '.values.outputs.distribution_id.value') --paths "/*"
 #   name: GetDistributionId
 
-# - task: AWSCLI@1
-#   inputs:
-#     awsCredentials: '(Cloudfront_Terraform)AWS'
-#     regionName: 'us-east-1'
-#     awsCommand: 'cloudfront'
-#     awsSubCommand: 'create-invalidation'
-#     awsArguments: "--distribution-id $[GetDistributionId.distribution_id] --paths '/*'"
+- bash: |
+    aws cloudfront create-invalidation --distribution-id $(cat $(System.ArtifactsDirectory)/variables/pipeline.env) --paths "/*"
+  displayName: Invalidate Cache
