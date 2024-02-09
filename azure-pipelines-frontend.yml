@@ -34,7 +34,7 @@ steps:
 - bash: |
     terraform show --json | jq '.values.outputs.distribution_id.value'
     echo "##vso[task.setvariable variable=distribution_id;isOutput=true]$distribution_id"
-    aws cloudfront create-invalidation --distribution-id $GetDistributionId.distribution_id --paths "/*"
+    aws cloudfront create-invalidation --distribution-id $distribution_id --paths "/*"
   name: GetDistributionId
 
 # - task: AWSCLI@1
