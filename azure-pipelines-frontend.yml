@@ -33,15 +33,15 @@ steps:
 # - script: DIST_ID=$(cat $(System.ArtifactsDirectory)/variables/pipeline.env)
 #   displayName: 'Restore Environment Variables'
 
-# - bash: |
-#         cat $(System.ArtifactsDirectory)/variables/pipeline.env
-#         echo "##vso[task.setvariable variable=distribution_id;isOutput=true]$(distribution_id)" 
-#   name: DistStep
-
 - bash: |
         cat $(System.ArtifactsDirectory)/variables/pipeline.env
-        echo "##vso[task.setvariable variable=dist_id]$dist_id" 
+        echo "##vso[task.setvariable variable=distribution_id;isOutput=true]$(distribution_id)" 
   name: DistStep
+
+# - bash: |
+#         cat $(System.ArtifactsDirectory)/variables/pipeline.env
+#         echo "##vso[task.setvariable variable=dist_id]$dist_id" 
+#   name: DistStep
 
 - task: TerraformInstaller@1
   inputs:
@@ -74,7 +74,7 @@ steps:
 #     aws cloudfront create-invalidation --distribution-id $(DistStep.distribution_id) --paths "/*"
 #   displayName: Invalidate Cache
 - bash: |
-    echo "This is a test: $(dist_id)"
+    echo "This is a test: ${(System.ArtifactsDirectory)/variables/pipeline.env}"
 #   displayName: Test Variable
 
 # - task: AWSCLI@1
