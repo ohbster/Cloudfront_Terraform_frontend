@@ -17,9 +17,10 @@ terraform {
   }
 }
 
-
+##Parametrize this
 data "aws_s3_bucket" "bucket" {
-    bucket = "ohbster-project-2-static"
+    #bucket = "ohbster-project-2-static"
+  bucket = var.bucket_name
 }
 
 locals {

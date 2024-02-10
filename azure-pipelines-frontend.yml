@@ -52,7 +52,7 @@ steps:
   inputs:
     provider: 'aws'
     command: 'apply'
-    commandOptions: '--auto-approve'
+    commandOptions: '--auto-approve --var="bucket_name=ohbster-project-2-static"'
     environmentServiceNameAWS: '(Cloudfront_Terraform)AWS_for_terrafrom'
   displayName: 'Apply Terraform'
 
