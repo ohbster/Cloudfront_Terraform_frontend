@@ -38,11 +38,6 @@ steps:
         echo "##vso[task.setvariable variable=dist_id;isOutput=true]$(cat $(System.ArtifactsDirectory)/variables/pipeline.env)" 
   name: DistStep
 
-# - bash: |
-#         cat $(System.ArtifactsDirectory)/variables/pipeline.env
-#         echo "##vso[task.setvariable variable=dist_id]$dist_id" 
-#   name: DistStep
-
 - task: TerraformInstaller@1
   inputs:
     terraformVersion: 'latest'
@@ -63,24 +58,11 @@ steps:
     commandOptions: '--auto-approve'
     environmentServiceNameAWS: '(Cloudfront_Terraform)AWS_for_terrafrom'
   displayName: 'Apply Terraform'
-  
-# - bash: |
-#     terraform show --json | jq '.values.outputs.distribution_id.value'
-#     echo "##vso[task.setvariable variable=distribution_id;isOutput=true]$distribution_id"
-#     aws cloudfront create-invalidation --distribution-id $(terraform show --json | jq '.values.outputs.distribution_id.value') --paths "/*"
-#   name: GetDistributionId
 
+# - bash: |
+#     aws cloudfront create-invalidation --distribution-id $(DistStep.dist_id) --paths "/*" --output text
+#   displayName: Invalidate Cache
 - bash: |
-    aws cloudfront create-invalidation --distribution-id $(DistStep.dist_id) --paths "/*" --output text
-  displayName: Invalidate Cache
-# - bash: |
-#     echo $(DistStep.dist_id)
-# #   displayName: Test Variable
+    aws s3 ls
+#   displayName: Test Variable
 
-# - task: AWSCLI@1
-#   inputs:
-#     awsCredentials: '(Cloudfront_Terraform)AWS'
-#     regionName: 'us-east-1'
-#     awsCommand: 'cloudfront'
-#     awsSubCommand: 'create-invalidation'
-#     awsArguments: "--distribution-id $(DistStep.distribution_id) --paths '/*'"
