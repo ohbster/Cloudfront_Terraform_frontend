@@ -74,7 +74,7 @@ steps:
 #     aws cloudfront create-invalidation --distribution-id $(DistStep.distribution_id) --paths "/*"
 #   displayName: Invalidate Cache
 - bash: |
-    echo $(DistStep.distribution_id)
+    echo $[DistStep.distribution_id]
 #   displayName: Test Variable
 
 # - task: AWSCLI@1
