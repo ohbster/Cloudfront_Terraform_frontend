@@ -32,12 +32,18 @@ steps:
         echo "##vso[task.setvariable variable=dist_id;isOutput=true]$(cat $(System.ArtifactsDirectory)/variables/pipeline.env)" 
   name: DistStep
 
+# This command will read the bucket_name from the bucket.env file
+- bash: |
+        echo "##vso[task.setvariable variable=bucket_name;isOutput=true]$(cat $(System.ArtifactsDirectory)/variables/bucket.env)"
+  name: BucketStep
+
+# Install Terraform to agent
 - task: TerraformInstaller@1
   inputs:
     terraformVersion: 'latest'
   displayName: 'Install Terraform'
 
-#terraform init
+# terraform init
 - task: TerraformTaskV4@4
   inputs:
     provider: 'aws'
@@ -52,7 +58,8 @@ steps:
   inputs:
     provider: 'aws'
     command: 'apply'
-    commandOptions: '--auto-approve --var="bucket_name=ohbster-project-2-static"'
+    #commandOptions: '--auto-approve --var="bucket_name=ohbster-project-2-static"'
+    commandOptions: '--auto-approve --var="bucket_name=$(BucketStep.bucket_name)"'
     environmentServiceNameAWS: '(Cloudfront_Terraform)AWS_for_terrafrom'
   displayName: 'Apply Terraform'
 
