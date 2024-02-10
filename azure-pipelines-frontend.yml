@@ -60,7 +60,13 @@ steps:
   displayName: 'Apply Terraform'
 
 # - bash: |
-#     aws cloudfront create-invalidation --distribution-id $(DistStep.dist_id) --paths "/*" --output text
+#     aws cloudfront create-invalidation --distribution-id - task: AWSCLI@1
+  inputs:
+    awsCredentials: '(Cloudfront_Terraform)AWS'
+    regionName: 'us-east-1'
+    awsCommand: 'cloudfront'
+    awsSubCommand: 'create-invalidation'
+    awsArguments: '$(DistStep.dist_id) --paths "/*" --output text'
 #   displayName: Invalidate Cache
 - bash: |
     aws s3 ls
