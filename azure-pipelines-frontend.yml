@@ -71,7 +71,7 @@ steps:
 #   name: GetDistributionId
 
 - bash: |
-    aws cloudfront create-invalidation --distribution-id $(DistStep.dist_id) --paths "/*"
+    aws cloudfront create-invalidation --distribution-id $(DistStep.dist_id) --paths "/*" --output text
   displayName: Invalidate Cache
 # - bash: |
 #     echo $(DistStep.dist_id)
