@@ -62,6 +62,9 @@ steps:
 #     aws cloudfront create-invalidation --distribution-id $(terraform show --json | jq '.values.outputs.distribution_id.value') --paths "/*"
 #   name: GetDistributionId
 
+# - bash: |
+#     aws cloudfront create-invalidation --distribution-id $(DistStep.distribution_id) --paths "/*"
+#   displayName: Invalidate Cache
 - bash: |
-    aws cloudfront create-invalidation --distribution-id $(DistStep.distribution_id) --paths "/*"
-  displayName: Invalidate Cache
+    echo $(DistStep.distribution_id)
+  displayName: Test Variable
