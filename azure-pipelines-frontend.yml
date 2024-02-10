@@ -12,66 +12,75 @@ trigger:
 
 pool:
   vmImage: ubuntu-latest
+stages:
+- stage:
+  displayName: Security Scanning
+  jobs:
+  - job:
+    displayName: TFSec Scanning
+    steps:
+    - task: tfsec@1
+      inputs:
+        version: 'v1.26.0'
+        dir: './'
+  - job:
+    displayName: Frontend terraform deployment
+    steps:
+      # This step will retrieve the distribution-id value from the backend pipeline.
+    - task: DownloadBuildArtifacts@1
+      inputs:
+        buildType: 'specific'
+        project: 'a7e208c4-07ae-48f0-a58d-837ef1f7cb64'
+        pipeline: '7'
+        buildVersionToDownload: 'latest'
+        downloadType: 'specific'
+        downloadPath: '$(System.ArtifactsDirectory)'
+      displayName: Download Artifacts
 
-steps:
-- task: tfsec@1
-  inputs:
-    version: 'v1.26.0'
+    # This command will read the distribution-id from the pipeline.env file
+    - bash: |
+            echo "##vso[task.setvariable variable=dist_id;isOutput=true]$(cat $(System.ArtifactsDirectory)/variables/pipeline.env)" 
+      name: DistStep # Name this step to reference it later
 
-  # This step will retrieve the distribution-id value from the backend pipeline.
-- task: DownloadBuildArtifacts@1
-  inputs:
-    buildType: 'specific'
-    project: 'a7e208c4-07ae-48f0-a58d-837ef1f7cb64'
-    pipeline: '7'
-    buildVersionToDownload: 'latest'
-    downloadType: 'specific'
-    downloadPath: '$(System.ArtifactsDirectory)'
+    # This command will read the bucket_name from the bucket.env file
+    - bash: |
+            echo "##vso[task.setvariable variable=bucket_name;isOutput=true]$(cat $(System.ArtifactsDirectory)/variables/bucket.env)"
+      name: BucketStep # Name this step to reference it later
 
-# This command will read the distribution-id from the pipeline.env file
-- bash: |
-        echo "##vso[task.setvariable variable=dist_id;isOutput=true]$(cat $(System.ArtifactsDirectory)/variables/pipeline.env)" 
-  name: DistStep # Name this step to reference it later
+    # Install Terraform to agent
+    - task: TerraformInstaller@1
+      inputs:
+        terraformVersion: 'latest'
+      displayName: 'Install Terraform'
 
-# This command will read the bucket_name from the bucket.env file
-- bash: |
-        echo "##vso[task.setvariable variable=bucket_name;isOutput=true]$(cat $(System.ArtifactsDirectory)/variables/bucket.env)"
-  name: BucketStep # Name this step to reference it later
+    # terraform init
+    - task: TerraformTaskV4@4
+      inputs:
+        provider: 'aws'
+        command: 'init'
+        backendServiceAWS: '(Cloudfront_Terraform)AWS_for_terrafrom'
+        backendAWSBucketName: 'ohbster-ado-terraform-class5'
+        backendAWSKey: 'cloudfront/frontend/terraform.tfstate'
+      displayName: 'Initialize Terraform'
 
-# Install Terraform to agent
-- task: TerraformInstaller@1
-  inputs:
-    terraformVersion: 'latest'
-  displayName: 'Install Terraform'
+    # terraform apply. This uses --auto-approve option, and passes BucketStep.bucket_name as a variable
+    - task: TerraformTaskV4@4
+      inputs:
+        provider: 'aws'
+        command: 'apply'
+        commandOptions: '--auto-approve --var="bucket_name=$(BucketStep.bucket_name)"'
+        environmentServiceNameAWS: '(Cloudfront_Terraform)AWS_for_terrafrom'
+      displayName: 'Apply Terraform'
 
-# terraform init
-- task: TerraformTaskV4@4
-  inputs:
-    provider: 'aws'
-    command: 'init'
-    backendServiceAWS: '(Cloudfront_Terraform)AWS_for_terrafrom'
-    backendAWSBucketName: 'ohbster-ado-terraform-class5'
-    backendAWSKey: 'cloudfront/frontend/terraform.tfstate'
-  displayName: 'Initialize Terraform'
+    # This task will invalidate the cloudfront cache using distribution-id
+    # This is necessary to ignore ttl value and update immediately 
 
-# terraform apply. This uses --auto-approve option, and passes BucketStep.bucket_name as a variable
-- task: TerraformTaskV4@4
-  inputs:
-    provider: 'aws'
-    command: 'apply'
-    commandOptions: '--auto-approve --var="bucket_name=$(BucketStep.bucket_name)"'
-    environmentServiceNameAWS: '(Cloudfront_Terraform)AWS_for_terrafrom'
-  displayName: 'Apply Terraform'
-
-# This task will invalidate the cloudfront cache using distribution-id
-# This is necessary to ignore ttl value and update immediately 
-
-- task: AWSCLI@1
-  inputs:
-    awsCredentials: '(Cloudfront_Terraform)AWS'
-    regionName: 'us-east-1'
-    awsCommand: 'cloudfront'
-    awsSubCommand: 'create-invalidation'
-    awsArguments: '--distribution-id $(DistStep.dist_id) --paths "/*" --output text'
-  displayName: 'Invalidate Cache'
+    - task: AWSCLI@1
+      inputs:
+        awsCredentials: '(Cloudfront_Terraform)AWS'
+        regionName: 'us-east-1'
+        awsCommand: 'cloudfront'
+        awsSubCommand: 'create-invalidation'
+        awsArguments: '--distribution-id $(DistStep.dist_id) --paths "/*" --output text'
+      displayName: 'Invalidate Cache'
 
