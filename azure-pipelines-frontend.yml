@@ -14,6 +14,10 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
+- task: tfsec@1
+  inputs:
+    version: 'v1.26.0'
+
   # This step will retrieve the distribution-id value from the backend pipeline.
 - task: DownloadBuildArtifacts@1
   inputs:
