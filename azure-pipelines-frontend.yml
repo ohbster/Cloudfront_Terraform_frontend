@@ -71,7 +71,3 @@ steps:
     awsSubCommand: 'create-invalidation'
     awsArguments: '--distribution-id $(DistStep.dist_id) --paths "/*" --output text'
 
-- bash: |
-    aws s3 ls
-#   displayName: Test Variable
-
