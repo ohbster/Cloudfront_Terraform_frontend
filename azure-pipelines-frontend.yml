@@ -31,6 +31,8 @@ steps:
     environmentServiceNameAWS: '(Cloudfront_Terraform)AWS_for_terrafrom'
   displayName: 'Apply Terraform'
 
+#This task will invalidate the cloudfront cache. 
+# This is necessary to ignore ttl value and update immediately 
 - task: AWSCLI@1
   inputs:
     awsCredentials: '(Cloudfront_Terraform)AWS'
