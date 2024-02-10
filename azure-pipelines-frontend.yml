@@ -1,14 +1,11 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
+# https://github.com/ohbster/Cloudfront_Terraform_frontend
+# Questions / Comments? ohbster@protonmail.com / 
 resources:
   pipelines:
     - pipeline: Cloudfront_Terraform
       source: ohbster.Cloudfront_Terraform
       project: Cloudfront_Terraform
-      trigger: true #run the front end each time that the backend successfully completes
+      trigger: true # run the front end each time that the backend successfully completes
 
 trigger:
 - main
@@ -17,7 +14,7 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
-  #This step will retrieve the distribution-id value from the backend pipeline.
+  # This step will retrieve the distribution-id value from the backend pipeline.
 - task: DownloadBuildArtifacts@1
   inputs:
     buildType: 'specific'
@@ -27,15 +24,15 @@ steps:
     downloadType: 'specific'
     downloadPath: '$(System.ArtifactsDirectory)'
 
-#This command will read the distribution-id from the pipeline.env file
+# This command will read the distribution-id from the pipeline.env file
 - bash: |
         echo "##vso[task.setvariable variable=dist_id;isOutput=true]$(cat $(System.ArtifactsDirectory)/variables/pipeline.env)" 
-  name: DistStep
+  name: DistStep # Name this step to reference it later
 
 # This command will read the bucket_name from the bucket.env file
 - bash: |
         echo "##vso[task.setvariable variable=bucket_name;isOutput=true]$(cat $(System.ArtifactsDirectory)/variables/bucket.env)"
-  name: BucketStep
+  name: BucketStep # Name this step to reference it later
 
 # Install Terraform to agent
 - task: TerraformInstaller@1
@@ -53,17 +50,16 @@ steps:
     backendAWSKey: 'cloudfront/frontend/terraform.tfstate'
   displayName: 'Initialize Terraform'
 
-#terraform apply --auto-approve
+# terraform apply. This uses --auto-approve option, and passes BucketStep.bucket_name as a variable
 - task: TerraformTaskV4@4
   inputs:
     provider: 'aws'
     command: 'apply'
-    #commandOptions: '--auto-approve --var="bucket_name=ohbster-project-2-static"'
     commandOptions: '--auto-approve --var="bucket_name=$(BucketStep.bucket_name)"'
     environmentServiceNameAWS: '(Cloudfront_Terraform)AWS_for_terrafrom'
   displayName: 'Apply Terraform'
 
-#This task will invalidate the cloudfront cache using distribution-id
+# This task will invalidate the cloudfront cache using distribution-id
 # This is necessary to ignore ttl value and update immediately 
 
 - task: AWSCLI@1

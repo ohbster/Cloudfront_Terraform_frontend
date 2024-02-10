@@ -11,15 +11,15 @@ provider "aws" {
 }
 terraform {
   backend "s3" {
-    bucket = "ohbster-ado-terraform-class5"
+    bucket = "ohbster-ado-terraform-class5" # Change this to your own terraform state s3 bucket
     key    = "cloudfront/frontend/terraform.tfstate"
     region = "us-east-1"
   }
 }
 
-##Parametrize this
+# Retrive the bucket, {BUCKET NAME}, that was created by the backend.
+# This value will be passed to 'terraform apply' as a command line argument by the pipeline
 data "aws_s3_bucket" "bucket" {
-    #bucket = "var="
   bucket = var.bucket_name
 }
 
