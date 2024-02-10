@@ -68,13 +68,14 @@ steps:
 # - bash: |
 #     aws cloudfront create-invalidation --distribution-id $(DistStep.distribution_id) --paths "/*"
 #   displayName: Invalidate Cache
-# - bash: |
-#     echo $[ DistStep.distribution_id ]
+- bash: |
+    echo $(DistStep.distribution_id)
 #   displayName: Test Variable
-- task: AWSCLI@1
-  inputs:
-    awsCredentials: '(Cloudfront_Terraform)AWS'
-    regionName: 'us-east-1'
-    awsCommand: 'cloudfront'
-    awsSubCommand: 'create-invalidation'
-    awsArguments: "--distribution-id $(DistStep.distribution_id) --paths '/*'"
+
+# - task: AWSCLI@1
+#   inputs:
+#     awsCredentials: '(Cloudfront_Terraform)AWS'
+#     regionName: 'us-east-1'
+#     awsCommand: 'cloudfront'
+#     awsSubCommand: 'create-invalidation'
+#     awsArguments: "--distribution-id $(DistStep.distribution_id) --paths '/*'"
