@@ -41,5 +41,5 @@ resource "aws_s3_object" "file" {
   source       = each.value
   content_type = lookup(local.content_types, regex("\\.[^.]+$", each.value), null)
   etag         = filemd5(each.value)
-  tags = var.common_tags
+  tags         = var.common_tags
 }

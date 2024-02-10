@@ -1,5 +1,5 @@
 variable "bucket_name" {
-  type = string
+  type        = string
   description = "Name of website's S3 bucket"
 }
 variable "common_tags" {
