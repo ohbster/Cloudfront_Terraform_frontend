@@ -28,8 +28,13 @@ steps:
     downloadType: 'specific'
     downloadPath: '$(System.ArtifactsDirectory)'
 
-- script: DIST_ID=$(cat $(System.ArtifactsDirectory)/variables/pipeline.env)
-  displayName: 'Restore Environment Variables'
+# - script: DIST_ID=$(cat $(System.ArtifactsDirectory)/variables/pipeline.env)
+#   displayName: 'Restore Environment Variables'
+
+- bash: |
+        cat $(System.ArtifactsDirectory)/variables/pipeline.env)
+        echo "##vso[task.setvariable variable=distribution_id;isOutput=true]$(distribution_id)" 
+  name: DistStep
 
 - task: TerraformInstaller@1
   inputs:
@@ -59,5 +64,5 @@ steps:
 #   name: GetDistributionId
 
 - bash: |
-    aws cloudfront create-invalidation --distribution-id $DIST_ID --paths "/*"
+    aws cloudfront create-invalidation --distribution-id $(DistStep.distribution_id) --paths "/*"
   displayName: Invalidate Cache
