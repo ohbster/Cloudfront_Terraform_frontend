@@ -40,7 +40,7 @@ steps:
 
 - bash: |
         cat $(System.ArtifactsDirectory)/variables/pipeline.env
-        echo "##vso[task.setvariable variable=distribution_id]$distribution_id" 
+        echo "##vso[task.setvariable variable=dist_id]$dist_id" 
   name: DistStep
 
 - task: TerraformInstaller@1
@@ -74,7 +74,7 @@ steps:
 #     aws cloudfront create-invalidation --distribution-id $(DistStep.distribution_id) --paths "/*"
 #   displayName: Invalidate Cache
 - bash: |
-    echo $[DistStep.distribution_id]
+    echo $(DistStep.dist_id)
 #   displayName: Test Variable
 
 # - task: AWSCLI@1
