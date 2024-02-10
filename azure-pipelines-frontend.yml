@@ -10,9 +10,6 @@ resources:
       project: Cloudfront_Terraform
       trigger: true #run the front end each time that the backend successfully completes
 
-variables:
-- name: dist_id
-
 trigger:
 - main
 
@@ -20,7 +17,7 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
-  
+  #This step will retrieve the distribution-id value from the backend pipeline.
 - task: DownloadBuildArtifacts@1
   inputs:
     buildType: 'specific'
@@ -30,11 +27,8 @@ steps:
     downloadType: 'specific'
     downloadPath: '$(System.ArtifactsDirectory)'
 
-# - script: DIST_ID=$(cat $(System.ArtifactsDirectory)/variables/pipeline.env)
-#   displayName: 'Restore Environment Variables'
-
+#This command will read the distribution-id from the pipeline.env file
 - bash: |
-        cat $(System.ArtifactsDirectory)/variables/pipeline.env
         echo "##vso[task.setvariable variable=dist_id;isOutput=true]$(cat $(System.ArtifactsDirectory)/variables/pipeline.env)" 
   name: DistStep
 
@@ -42,6 +36,8 @@ steps:
   inputs:
     terraformVersion: 'latest'
   displayName: 'Install Terraform'
+
+#terraform init
 - task: TerraformTaskV4@4
   inputs:
     provider: 'aws'
@@ -51,6 +47,7 @@ steps:
     backendAWSKey: 'cloudfront/frontend/terraform.tfstate'
   displayName: 'Initialize Terraform'
 
+#terraform apply --auto-approve
 - task: TerraformTaskV4@4
   inputs:
     provider: 'aws'
@@ -59,10 +56,7 @@ steps:
     environmentServiceNameAWS: '(Cloudfront_Terraform)AWS_for_terrafrom'
   displayName: 'Apply Terraform'
 
-# - bash: |
-#     aws cloudfront create-invalidation --distribution-id $(DistStep.dist_id) --paths "/*" --output text
-#   displayName: Invalidate Cache
-
+#This step will invalidate the cloudfront cache, using the distribution-id. Changes to the frontend will be immediate
 - task: AWSCLI@1
   inputs:
     awsCredentials: '(Cloudfront_Terraform)AWS'
@@ -70,4 +64,5 @@ steps:
     awsCommand: 'cloudfront'
     awsSubCommand: 'create-invalidation'
     awsArguments: '--distribution-id $(DistStep.dist_id) --paths "/*" --output text'
+  displayName: 'Invalidate Cache'
 
