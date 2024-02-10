@@ -56,7 +56,9 @@ steps:
     environmentServiceNameAWS: '(Cloudfront_Terraform)AWS_for_terrafrom'
   displayName: 'Apply Terraform'
 
-#This step will invalidate the cloudfront cache, using the distribution-id. Changes to the frontend will be immediate
+#This task will invalidate the cloudfront cache using distribution-id
+# This is necessary to ignore ttl value and update immediately 
+
 - task: AWSCLI@1
   inputs:
     awsCredentials: '(Cloudfront_Terraform)AWS'
