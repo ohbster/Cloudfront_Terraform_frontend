@@ -3,6 +3,13 @@
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
 
+resources:
+  pipelines:
+    - pipeline: Cloudfront_Terraform
+      source: ohbster.Cloudfront_Terraform
+      project: Cloudfront_Terraform
+      trigger: true #run the front end each time that the backend successfully completes
+
 trigger:
 - main
 
@@ -10,10 +17,27 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
+  #This step will retrieve the distribution-id value from the backend pipeline.
+- task: DownloadBuildArtifacts@1
+  inputs:
+    buildType: 'specific'
+    project: 'a7e208c4-07ae-48f0-a58d-837ef1f7cb64'
+    pipeline: '7'
+    buildVersionToDownload: 'latest'
+    downloadType: 'specific'
+    downloadPath: '$(System.ArtifactsDirectory)'
+
+#This command will read the distribution-id from the pipeline.env file
+- bash: |
+        echo "##vso[task.setvariable variable=dist_id;isOutput=true]$(cat $(System.ArtifactsDirectory)/variables/pipeline.env)" 
+  name: DistStep
+
 - task: TerraformInstaller@1
   inputs:
     terraformVersion: 'latest'
   displayName: 'Install Terraform'
+
+#terraform init
 - task: TerraformTaskV4@4
   inputs:
     provider: 'aws'
@@ -23,6 +47,7 @@ steps:
     backendAWSKey: 'cloudfront/frontend/terraform.tfstate'
   displayName: 'Initialize Terraform'
 
+#terraform apply --auto-approve
 - task: TerraformTaskV4@4
   inputs:
     provider: 'aws'
@@ -31,12 +56,15 @@ steps:
     environmentServiceNameAWS: '(Cloudfront_Terraform)AWS_for_terrafrom'
   displayName: 'Apply Terraform'
 
-#This task will invalidate the cloudfront cache. 
+#This task will invalidate the cloudfront cache using distribution-id
 # This is necessary to ignore ttl value and update immediately 
+
 - task: AWSCLI@1
   inputs:
     awsCredentials: '(Cloudfront_Terraform)AWS'
     regionName: 'us-east-1'
     awsCommand: 'cloudfront'
     awsSubCommand: 'create-invalidation'
-    awsArguments: '--distribution-id "E3MU3PWGRMQQIP" --paths "/*"'
+    awsArguments: '--distribution-id $(DistStep.dist_id) --paths "/*" --output text'
+  displayName: 'Invalidate Cache'
+
